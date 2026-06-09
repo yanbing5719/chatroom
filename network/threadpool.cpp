@@ -1,32 +1,15 @@
-#include <iostream>
-#include <mutex>
-#include <condition_variable>
-#include <vector>
-#include <queue>
-#include <functional>
-#include <thread>
+#include "threadpool.hpp"
 
-class ThreadPool
+ThreadPool::ThreadPool(int threadnum) : stop(false)
 {
-
-private:
-    std::vector<std::thread> threads;
-    std::queue<std::function<void()>> tasks;
-    std::mutex mtx;
-    bool stop;
-    std::condition_variable cv;
-
-public:
-    ThreadPool(int threadnum) : stop(false)
+    for (int i = 0; i < threadnum; i++)
     {
-        for (int i = 0; i < threadnum; i++)
-        {
-            threads.emplace_back([this]()
-                                 {
+        threads.emplace_back([this]()
+                             {
                 while(1){
                     std::function<void()> task;
                     {
-                        std::unique_lock lock(mtx);
+                        std::unique_lock<std::mutex> lock(mtx);
                         cv.wait(lock,[this](){
                             return !tasks.empty()||stop;
                         });
@@ -39,31 +22,30 @@ public:
                     task();
                 
                 } });
-        }
     }
+}
 
-    ~ThreadPool()
+ThreadPool::~ThreadPool()
+{
     {
+        std::unique_lock<std::mutex> lock(mtx);
+        stop = true;
+    }
+    for (auto &t : threads)
+    {
+        if (t.joinable())
         {
-            std::unique_lock lock(mtx);
-            stop = true;
-        }
-        for (auto &t : threads)
-        {
-            if (t.joinable())
-            {
-                // 等待所有线程结束
-                t.join();
-            }
+            // 等待所有线程结束
+            t.join();
         }
     }
+}
 
-    void enqueue(std::function<void()> task)
+void ThreadPool::enqueue(std::function<void()> task)
+{
     {
-        {
-            std::unique_lock lock(mtx);
-            tasks.push(task);
-        }
-        cv.notify_one();
+        std::unique_lock<std::mutex> lock(mtx);
+        tasks.push(task);
     }
-};
+    cv.notify_one();
+}

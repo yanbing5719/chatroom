@@ -1,39 +1,27 @@
 #include <iostream>
-#include <mutex>
-#include <sys/socket.h>
-#include <dirent.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
-#include <fstream>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/sendfile.h>
-#include <sys/stat.h>
 
-class FTPServer
-{
-private:
-    int listenfd;
-    const int PORT = 8888;
 
-public:
-    FTPServer()
+#include "server.hpp"
+
+    FTPServer:: FTPServer()
     {
         listenfd = -1;
     }
-    ~FTPServer()
+    FTPServer::~FTPServer()
     {
         if (listenfd != -1)
         {
             close(listenfd);
         }
     }
-    bool BuildConnect()
+    bool FTPServer::BuildConnect()
     {
         // 创建监听套接字
         listenfd = socket(AF_INET, SOCK_STREAM, 0);
-        
+
         // 设置监听地址
         sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
@@ -57,7 +45,7 @@ public:
             listenfd = -1;
             return false;
         }
-        
+
         // 监听
         if (listen(listenfd, SOMAXCONN) == -1)
         {
@@ -66,7 +54,7 @@ public:
             return false;
         }
         std::cout << "启动服务器，端口号8888" << std::endl;
-       
+
         // 连接客户端
         while (1)
         {
@@ -81,4 +69,9 @@ public:
         close(listenfd);
         return true;
     }
-};
+
+    // listenfd在该函数内不可修改
+    int FTPServer::getlistenfd() const
+    {
+        return listenfd;
+    }
