@@ -1,0 +1,51 @@
+{
+  /* =========================
+     目标：
+     - 不自动补代码
+     - 不抢 Enter / Tab
+     - 不生成模板
+     - 仅显示“被动提示列表”
+     ========================= */
+
+  /* 关闭自动弹出补全 */
+  "editor.quickSuggestions": {
+    "comments": "off",
+    "strings": "off",
+    "other": "on"
+  },
+  "editor.suggestOnTriggerCharacters": true,
+
+  /* 禁止任何“自动接受” */
+  "editor.acceptSuggestionOnEnter": "on",
+  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.tabCompletion": "off",
+
+  /* 关闭参数 / 幽灵提示 */
+  "editor.parameterHints.enabled": false,
+  "editor.inlineSuggest.enabled": false,
+
+  /* ⚠️ 关键：不要关闭 suggest 本身 */
+  "editor.suggest.enabled": true,
+
+  /* 防止 snippets / 模板 */
+  "editor.snippetSuggestions": "none",
+
+  /* C / C++ 单独兜底 */
+  "[c]": {
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "on"
+    }
+  },
+  "[cpp]": {
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "on"
+    }
+  },
+
+  /* 使用最“弱”的 C/C++ 解析模式 */
+  "C_Cpp.intelliSenseEngine": "Default"
+}
