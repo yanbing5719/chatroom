@@ -295,3 +295,44 @@ n > 0   → 读到数据
 n == 0  → 对端关闭连接（真正的“结束”）
 n < 0   → 出错（或非阻塞无数据/被打断）
 ```
+
+### 2026.6.14
+1.
+```
+inbuf+=buf
+```
+这个处理方法不能保证结尾一定是"\0",但是inbuf必须以"\0"结尾。
+因此换成下面这个处理方法
+
+```
+inbuf.append(buf,n);
+```
+2.server 里面应该保留每一个客户端的信息，利用哈希表来存储
+
+3.现有的Connection里面创建的对象会在for循环结束后自动销毁无法保留有用信息，因此这里用new来为他分配内存延长生命周期。
+### 2026.6.16
+ 1.
+ ```c
+ bool ExplainCommand::extractcmd(std::string &data){
+    size_t pos;
+    while(pos=data.find("\r\n")!=std::string::npos){
+    if(pos!=std::string::npos){
+        cmdbuffer.push_back(data.substr(0,pos));
+        data.erase(0,pos+2);
+    }
+}
+     return !cmdbuffer.empty();
+}
+```
+初版代码，有漏洞，应该只负责解析一条命令，不要将完整的命令储存在类里面，将来不好调用
+
+2.利用枚举类型和结构体来储存解析的命令
+
+3.利用字节流来帮助解析命令，字节流可以按照空白分割符来划分字符。
+
+4.Connection类里面因为要拷贝原来的inbuf因此函数要用
+```c
+std::string &Connection::getbuffer(){
+    return inbuf;
+}
+```
